@@ -148,9 +148,6 @@ install: install_man
 clean:
 	@rm -f $(SRC_DIR)/*.o $(SRC_DIR)/*/*.o $(PROG) $(PROG).so fake-input.so mod-monitor.so src/info.h
 
-test:
-	py.test tests/test_host.py
-
 # manual page rule
 # Uses md2man to convert the README to groff man page
 # https://github.com/sunaku/md2man
