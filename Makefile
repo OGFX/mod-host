@@ -163,7 +163,7 @@ install_man:
 A=`grep -n 'The commands supported' README.md | cut -d':' -f1`
 B=`grep -n 'bye!' README.md | cut -d':' -f1`
 src/info.h:
-	@sed -n -e "$A,$B p" -e "$B q" README.md > help_msg
-	@python3 utils/txt2cvar.py help_msg > src/info.h
-	@rm help_msg
-	@echo "const char version[] = {\""`git describe --tags 2>/dev/null || echo 0.0.0`\""};" >> src/info.h
+	sed -n -e "$A,$B p" -e "$B q" README.md > help_msg
+	python3 utils/txt2cvar.py help_msg > src/info.h
+	rm help_msg
+	echo "const char version[] = {\""`git describe --tags 2>/dev/null || echo 0.0.0`\""};" >> src/info.h
