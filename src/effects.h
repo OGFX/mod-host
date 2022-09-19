@@ -142,7 +142,7 @@ typedef struct {
 
 int effects_init(void* client);
 int effects_finish(int close_client);
-int effects_add(const char *uri, int instance, int activate);
+int effects_add(const char *uri, int instance, const char *jack_client_name, int activate);
 int effects_add_multi(int activate, int num_effects, int *effects, const char *const *uris);
 int effects_remove(int effect_id);
 int effects_remove_multi(int num_effects, int *effects);

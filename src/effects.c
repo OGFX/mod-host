@@ -5028,7 +5028,7 @@ int effects_finish(int close_client)
     return SUCCESS;
 }
 
-int effects_add(const char *uri, int instance, int activate)
+int effects_add(const char *uri, int instance, const char *jack_client_name, int activate)
 {
     unsigned int ports_count;
     char effect_name[32], port_name[MAX_CHAR_BUF_SIZE+1];
@@ -5076,7 +5076,14 @@ int effects_add(const char *uri, int instance, int activate)
     lilv_instance = NULL;
 
     /* Create a client to Jack */
-    snprintf(effect_name, 31, "effect_%i", instance);
+    if (jack_client_name)
+    {
+        strncpy(effect_name, jack_client_name, 31);
+    }
+    else
+    {
+        snprintf(effect_name, 31, "effect_%i", instance);
+    }
     jack_client = jack_client_open(effect_name, JackNoStartServer, &jack_status);
 
     if (!jack_client)
@@ -5982,10 +5989,10 @@ int effects_add_multi(int activate, int num_effects, int *effects, const char *c
         return ERR_INVALID_OPERATION;
 
     if (num_effects == 1)
-        return effects_add(*uris, *effects, activate);
+        return effects_add(*uris, *effects, 0, activate);
 
     for (int i = 0; i < num_effects; ++i)
-        effects_add(uris[i], effects[i], activate);
+        effects_add(uris[i], effects[i], 0, activate);
 
     return SUCCESS;
 }
