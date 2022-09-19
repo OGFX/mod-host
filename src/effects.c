@@ -4410,7 +4410,7 @@ int effects_finish(int close_client)
 int effects_add(const char *uri, int instance, const char *jack_client_name)
 {
     unsigned int ports_count;
-    char effect_name[32], port_name[MAX_CHAR_BUF_SIZE+1];
+    char effect_name[1024], port_name[MAX_CHAR_BUF_SIZE+1];
     float *audio_buffer, *cv_buffer, *control_buffer;
     jack_port_t *jack_port;
     uint32_t audio_ports_count, input_audio_ports_count, output_audio_ports_count;
@@ -4421,7 +4421,7 @@ int effects_add(const char *uri, int instance, const char *jack_client_name)
     port_t *port;
     int32_t error;
 
-    effect_name[31] = '\0';
+    effect_name[1023] = '\0';
     port_name[MAX_CHAR_BUF_SIZE] = '\0';
 
     /* Jack */
@@ -4456,11 +4456,11 @@ int effects_add(const char *uri, int instance, const char *jack_client_name)
     /* Create a client to Jack */
     if (jack_client_name)
     {
-        strncpy(effect_name, jack_client_name, 31);
+        strncpy(effect_name, jack_client_name, 1023);
     }
     else
     {
-        snprintf(effect_name, 31, "effect_%i", instance);
+        snprintf(effect_name, 1023, "effect_%i", instance);
     }
     jack_client = jack_client_open(effect_name, JackNoStartServer, &jack_status);
 
