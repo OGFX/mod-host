@@ -841,6 +841,7 @@ int main(int argc, char **argv)
     if (interactive)
     {
         interactive_mode();
+        effects_finish(1);
         return 0;
     }
     else
