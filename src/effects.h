@@ -154,6 +154,8 @@ int effects_get_parameter_info(int effect_id, const char *control_symbol, float 
 int effects_midi_learn(int effect_id, const char *control_symbol, float minimum, float maximum);
 int effects_midi_map(int effect_id, const char *control_symbol, int channel, int controller, float minimum, float maximum);
 int effects_midi_unmap(int effect_id, const char *control_symbol);
+int effects_midi_map_tempo_tap(int channel, int controller);
+int effects_midi_unmap_tempo_tap();
 int effects_licensee(int effect_id, char **licensee);
 int effects_set_beats_per_minute(double bpm);
 int effects_set_beats_per_bar(float bpb);

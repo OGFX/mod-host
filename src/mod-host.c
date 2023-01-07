@@ -332,6 +332,20 @@ static void midi_unmap_cb(proto_t *proto)
     protocol_response_int(resp, proto);
 }
 
+static void midi_map_tempo_tap_cb(proto_t *proto)
+{
+    int resp;
+    resp = !effects_midi_map_tempo_tap(atoi(proto->list[1]), atoi(proto->list[2]));
+    protocol_response_int(resp, proto);
+}
+
+static void midi_unmap_tempo_tap_cb(proto_t *proto)
+{
+    int resp;
+    resp = !effects_midi_unmap_tempo_tap();
+    protocol_response_int(resp, proto);
+}
+
 static void cc_map_cb(proto_t *proto)
 {
     int resp;
@@ -676,6 +690,8 @@ static int mod_host_init(jack_client_t* client, int socket_port, int feedback_po
     protocol_add_command(MIDI_LEARN, midi_learn_cb);
     protocol_add_command(MIDI_MAP, midi_map_cb);
     protocol_add_command(MIDI_UNMAP, midi_unmap_cb);
+    protocol_add_command(MIDI_MAP_TEMPO_TAP, midi_map_tempo_tap_cb);
+    protocol_add_command(MIDI_UNMAP_TEMPO_TAP, midi_unmap_tempo_tap_cb);
     protocol_add_command(CC_MAP, cc_map_cb);
     protocol_add_command(CC_VALUE_SET, cc_value_set_cb);
     protocol_add_command(CC_UNMAP, cc_unmap_cb);

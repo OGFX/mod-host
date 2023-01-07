@@ -177,9 +177,17 @@ The commands supported by mod-host are:
 
     midi_unmap <instance_number> <param_symbol>
         * unmap the MIDI controller from a parameter
-        e.g.: unmap 0 gain
+        e.g.: midi_unmap 0 gain
 
-    set_midi_program_change_pedalboard_bank_channel <enable> <midi_channel>
+    midi_map_tempo_tap <midi_channel> <midi_cc>
+        * map the MIDI tempo tap
+        e.g.: midi_map_tempo_tap 0 0 
+
+     midi_unmap_tempo_tap
+        * unmap the MIDI tempo tap
+        e.g.: midi_unmap_tempo_tap
+
+     set_midi_program_change_pedalboard_bank_channel <enable> <midi_channel>
         * set the MIDI channel which changes pedalboard banks on MIDI program change. <midi_channel> is in the range of [0,15].
         e.g.: set_midi_program_change_pedalboard_bank_channel 1 5 to enable listening for bank changes on channel 6
 

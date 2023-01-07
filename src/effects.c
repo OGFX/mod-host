@@ -517,6 +517,12 @@ typedef struct MIDI_CC_T {
     port_t* port;
 } midi_cc_t;
 
+typedef struct MIDI_CC_TEMPO_TAP_T {
+    int8_t channel;
+    uint8_t controller;
+    jack_nframes_t last_frame_time;
+} midi_cc_tempo_tap_t;
+
 typedef struct ASSIGNMENT_T {
     int effect_id;
     port_t *port;
@@ -646,6 +652,8 @@ typedef struct RAW_MIDI_PORT_ITEM {
 
 static effect_t g_effects[MAX_INSTANCES];
 static midi_cc_t g_midi_cc_list[MAX_MIDI_CC_ASSIGN], *g_midi_learning;
+
+static midi_cc_tempo_tap_t g_midi_cc_tempo_tap;
 
 #ifdef HAVE_CONTROLCHAIN
 /* Control Chain */
@@ -2593,6 +2601,26 @@ static int ProcessGlobalClient(jack_nframes_t nframes, void *arg)
         handled = false;
         channel = (event.buffer[0] & 0x0F);
 
+        const float max_tap_delay = 10.0f;
+        const float min_tap_delay = 0.1f;
+        if (g_midi_cc_tempo_tap.channel != -1)
+        {
+            if (channel == g_midi_cc_tempo_tap.channel && controller == g_midi_cc_tempo_tap.controller && mvalue > 63)
+            {
+                jack_nframes_t current = event.time + g_monotonic_frame_count;
+                const float delta_t = (current - g_midi_cc_tempo_tap.last_frame_time) / (float)g_sample_rate;
+                if (delta_t < max_tap_delay && delta_t > min_tap_delay)
+                {
+                    const float bpm = 60.0f / delta_t;
+                    effects_set_beats_per_minute(bpm);
+                    // printf("bpm: %f delta_t: %f current: %d last: %d\n", bpm, delta_t, current, g_midi_cc_tempo_tap.last_frame_time);
+                }
+                
+                g_midi_cc_tempo_tap.last_frame_time = current;
+                continue;
+            }
+        }
+
         for (int j = 0; j < MAX_MIDI_CC_ASSIGN; j++)
         {
             if (g_midi_cc_list[j].effect_id == ASSIGNMENT_NULL)
@@ -3756,6 +3784,8 @@ static uint32_t GetHyliaOutputLatency(void)
 
 int effects_init(void* client)
 {
+    g_midi_cc_tempo_tap.channel = -1;
+
     /* This global client is for connections / disconnections and midi-learn */
     if (client != NULL)
     {
@@ -6683,6 +6713,22 @@ int effects_midi_unmap(int effect_id, const char *control_symbol)
 
     return ERR_LV2_INVALID_PARAM_SYMBOL;
 }
+
+int effects_midi_map_tempo_tap(int channel, int controller)
+{
+    g_midi_cc_tempo_tap.channel = channel;
+    g_midi_cc_tempo_tap.controller = controller;
+    g_midi_cc_tempo_tap.last_frame_time = g_monotonic_frame_count;
+    return SUCCESS;
+}
+
+int effects_midi_unmap_tempo_tap()
+{
+    g_midi_cc_tempo_tap.channel = -1;
+    g_midi_cc_tempo_tap.controller = 0;
+    return SUCCESS;
+}
+
 
 int effects_licensee(int effect_id, char **licensee_ptr)
 {
