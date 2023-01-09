@@ -811,7 +811,6 @@ static const void *GetPortValueForState(const char* symbol, void* user_data, uin
 static int LoadPresets(effect_t *effect);
 static void FreeFeatures(effect_t *effect);
 static void FreePluginString(void* handle, char *str);
-static void ConnectToAllHardwareMIDIPorts(void);
 static void ConnectToMIDIThroughPorts(void);
 #ifdef __MOD_DEVICES__
 static void HMIWidgetsSetLedWithBlink(LV2_HMI_WidgetControl_Handle handle,
@@ -3131,38 +3130,6 @@ static void FreePluginString(void* handle, char *str)
     UNUSED_PARAM(handle);
 }
 
-static void ConnectToAllHardwareMIDIPorts(void)
-{
-    if (g_jack_global_client == NULL)
-        return;
-
-    const char** const midihwports = jack_get_ports(g_jack_global_client, "",
-                                                    JACK_DEFAULT_MIDI_TYPE,
-                                                    JackPortIsTerminal|JackPortIsPhysical|JackPortIsOutput);
-    if (midihwports != NULL)
-    {
-        const char *ourportname = jack_port_name(g_midi_in_port);
-
-        for (int i=0; midihwports[i] != NULL; ++i)
-            jack_connect(g_jack_global_client, midihwports[i], ourportname);
-
-        struct list_head *it;
-        pthread_mutex_lock(&g_raw_midi_port_mutex);
-        list_for_each(it, &g_raw_midi_port_list)
-        {
-            raw_midi_port_item* const portitemptr = list_entry(it, raw_midi_port_item, siblings);
-
-            for (int i=0; midihwports[i] != NULL; ++i)
-                jack_connect(g_jack_global_client,
-                             midihwports[i],
-                             jack_port_name(portitemptr->jack_port));
-        }
-        pthread_mutex_unlock(&g_raw_midi_port_mutex);
-
-        jack_free(midihwports);
-    }
-}
-
 static void ConnectToMIDIThroughPorts(void)
 {
     if (g_jack_global_client == NULL)
@@ -4296,11 +4263,6 @@ int effects_init(void* client)
         const char *ourportname = jack_port_name(g_midi_in_port);
         jack_connect(g_jack_global_client, "mod-midi-merger:out", ourportname);
         ConnectToMIDIThroughPorts();
-    }
-    /* Else connect to all good hw ports (system, ttymidi and nooice) */
-    else
-    {
-        ConnectToAllHardwareMIDIPorts();
     }
 
 #ifdef MOD_IO_PROCESSING_ENABLED
@@ -7920,9 +7882,6 @@ int effects_aggregated_midi_enable(int enable)
         jack_intclient_t broadcaster = jack_internal_client_handle(g_jack_global_client, "mod-midi-broadcaster", NULL);
         if (broadcaster != 0)
             jack_internal_client_unload(g_jack_global_client, broadcaster);
-
-        // step 2. connect to all midi hw ports
-        ConnectToAllHardwareMIDIPorts();
     }
 #endif // HAVE_JACK2
 
