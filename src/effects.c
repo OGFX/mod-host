@@ -687,6 +687,7 @@ static jack_port_t *g_audio_out1_port;
 static jack_port_t *g_audio_out2_port;
 #endif
 static jack_port_t *g_midi_in_port;
+static jack_port_t *g_midi_out_port;
 static jack_position_t g_jack_pos;
 static bool g_jack_rolling;
 static volatile double g_transport_bpb;
@@ -3774,6 +3775,16 @@ int effects_init(void* client)
     if (! g_midi_in_port)
     {
         fprintf(stderr, "can't register global jack midi-in port\n");
+        if (client == NULL)
+            jack_client_close(g_jack_global_client);
+        return ERR_JACK_PORT_REGISTER;
+    }
+
+    g_midi_out_port = jack_port_register(g_jack_global_client, "midi_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
+
+    if (! g_midi_out_port)
+    {
+        fprintf(stderr, "can't register global jack midi-out port\n");
         if (client == NULL)
             jack_client_close(g_jack_global_client);
         return ERR_JACK_PORT_REGISTER;
