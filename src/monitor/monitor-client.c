@@ -657,6 +657,5 @@ void monitor_client_stop(void)
 
         jack_finish(mon);
         jack_client_close(client);
-        g_active = false;
     }
 }
