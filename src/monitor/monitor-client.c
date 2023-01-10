@@ -650,9 +650,12 @@ bool monitor_client_setup_volume(float volume)
 
 void monitor_client_stop(void)
 {
-    monitor_client_t *const mon = g_monitor_handle;
-    jack_client_t *const client = mon->client;
+    if (g_active)
+    {
+        monitor_client_t *const mon = g_monitor_handle;
+        jack_client_t *const client = mon->client;
 
-    jack_finish(mon);
-    jack_client_close(client);
+        jack_finish(mon);
+        jack_client_close(client);
+    }
 }
