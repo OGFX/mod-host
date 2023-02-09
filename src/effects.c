@@ -2844,7 +2844,6 @@ static void JackTimebase(jack_transport_state_t state, jack_nframes_t nframes,
     }
 
     pos->tick = (int32_t)(tick + 0.5);
-    pos->tick_double = tick;
     return;
 
     UNUSED_PARAM(state);
