@@ -1722,7 +1722,10 @@ static int ProcessPlugin(jack_nframes_t nframes, void *arg)
 
                 lv2_atom_forge_key(&forge, g_urids.time_barBeat);
 
-                lv2_atom_forge_float(&forge, pos.beat - 1 + (pos.tick / pos.ticks_per_beat));
+                if (pos.valid & JackTickDouble)
+                    lv2_atom_forge_float(&forge, pos.beat - 1 + (pos.tick_double / pos.ticks_per_beat));
+                else
+                    lv2_atom_forge_float(&forge, pos.beat - 1 + (pos.tick / pos.ticks_per_beat));
 
                 lv2_atom_forge_key(&forge, g_urids.time_beat);
                 lv2_atom_forge_double(&forge, pos.beat - 1);
@@ -2782,7 +2785,7 @@ static void JackTimebase(jack_transport_state_t state, jack_nframes_t nframes,
     if (new_pos || g_transport_reset) // Is caching involved? No.
     {
         // Do we have to set every "constant" data field every time?
-        pos->valid = JackPositionBBT; 
+        pos->valid = JackPositionBBT | JackTickDouble;
         pos->beat_type = 4.0f;
         pos->ticks_per_beat = TRANSPORT_TICKS_PER_BEAT;
 
@@ -2828,6 +2831,8 @@ static void JackTimebase(jack_transport_state_t state, jack_nframes_t nframes,
     else // not new_pos nor g_transport_reset
     {
         // update the current tick with the beat.
+        tick = pos->tick_double +
+              (nframes * TRANSPORT_TICKS_PER_BEAT * pos->beats_per_minute / (double)(g_sample_rate * 60));
 
         // why adjust? why can overflow happen?
         while (tick >= TRANSPORT_TICKS_PER_BEAT)
@@ -2844,6 +2849,7 @@ static void JackTimebase(jack_transport_state_t state, jack_nframes_t nframes,
     }
 
     pos->tick = (int32_t)(tick + 0.5);
+    pos->tick_double = tick;
     return;
 
     UNUSED_PARAM(state);
